@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Form Pallet</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .form-card {
+      background: #ffffff;
+      padding: 35px;
+      border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 480px;
+      position: relative;
+    }
+    h2 {
+      text-align: center;
+      color: #1f2937;
+      margin-bottom: 30px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #374151;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+    input:focus, textarea:focus {
+      border-color: #3b82f6;
+      outline: none;
+    }
+    input[readonly] {
+      background-color: #f9fafb;
+      color: #6b7280;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #2563eb;
+    }
+    .notification {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #d1fae5;
+      color: #065f46;
+      border: 1px solid #10b981;
+      border-radius: 10px;
+      font-weight: 600;
+      text-align: center;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="form-card">
+    <h2>Form Pallet</h2>
+    <form id="palletform">
+      <label for="nama">Nama Pengisi</label>
+      <input type="text" id="nama" name="nama" placeholder="Masukkan nama Anda" required />
+
+      <label for="tanggal">Tanggal Input</label>
+      <input type="date" id="tanggal" name="tanggal" required />
+
+      <label for="kode">Kode Pallet</label>
+      <input type="text" id="kode" name="kode" value="Pallet 001" readonly />
+
+      <label for="isi">Isi Pallet</label>
+      <textarea id="isi" name="isi" placeholder="Masukkan isi pallet di sini..." rows="4" required></textarea>
+
+      <button type="submit">Kirim Data</button>
+    </form>
+    <p id="status" class="notification" style="display:none;"></p>
+  </div>
+
+  <script>
+    // Set tanggal ke hari ini secara otomatis
+    const tanggalInput = document.getElementById('tanggal');
+    if (!tanggalInput.value) {
+      const today = new Date().toISOString().split('T')[0];
+      tanggalInput.value = today;
+    }
+  </script>
+
+  <script type="module">
+    // Import modular Firebase SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+    const firebaseConfig = {
+    apiKey: "AIzaSyD0Z1-eScM8oW7InA4NUg33yYBey-zpanU",
+    authDomain: "group3finalbanget.firebaseapp.com",
+    databaseURL: "https://group3finalbanget-default-rtdb.firebaseio.com",
+    projectId: "group3finalbanget",
+    storageBucket: "group3finalbanget.firebasestorage.app",
+    messagingSenderId: "311617904903",
+    appId: "1:311617904903:web:4d6b772c22d899db0fa5a2"
+  };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    document.getElementById('palletform').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const nama = document.getElementById('nama').value.trim();
+      const tanggal = document.getElementById('tanggal').value;
+      const kode = document.getElementById('kode').value;
+      const isi = document.getElementById('isi').value.trim();
+
+      const palletRef = ref(database, 'PalletData/');
+      const newPalletRef = push(palletRef);
+
+      set(newPalletRef, {
+        nama: nama,
+        tanggal: tanggal,
+        kode: kode,
+        isi: isi
+      }).then(() => {
+        const status = document.getElementById('status');
+        status.style.display = 'block';
+        status.style.backgroundColor = '#d1fae5';
+        status.style.color = '#065f46';
+        status.innerText = 'Data berhasil dikirim!';
+        document.getElementById('palletform').reset();
+        tanggalInput.value = new Date().toISOString().split('T')[0]; // Reset ke hari ini
+      }).catch((error) => {
+        const status = document.getElementById('status');
+        status.style.display = 'block';
+        status.style.backgroundColor = '#fee2e2';
+        status.style.color = '#b91c1c';
+        status.innerText = 'Error: ' + error.message;
+      });
+    });
+  </script>
+</body>
+</html>
